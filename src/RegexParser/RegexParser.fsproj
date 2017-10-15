@@ -5,6 +5,7 @@
   <ItemGroup>
     <Compile Include="Tokenizer.fs" />
     <Compile Include="Ast.fs" />
+    <Compile Include="Pipeline.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />

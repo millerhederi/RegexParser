@@ -46,7 +46,7 @@ type ``Tokenizer Tests`` () =
 
     [<TestCaseSource("cases")>]
     member this.``When tokenizing input `` (case : Case) =
-        let actual = case.input |> Tokenizer.tokenize
+        let actual = case.input |> Pipeline.tokenize
 
         match case.expected, actual with
         | Some expected, Result.Ok actual -> Assert.AreEqual(expected, actual)
