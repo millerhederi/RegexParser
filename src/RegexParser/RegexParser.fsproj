@@ -6,6 +6,7 @@
     <Compile Include="Tokenizer.fs" />
     <Compile Include="Ast.fs" />
     <Compile Include="Nfa.fs" />
+    <Compile Include="Dfa.fs" />
     <Compile Include="Pipeline.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>

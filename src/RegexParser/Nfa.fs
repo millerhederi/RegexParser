@@ -6,7 +6,23 @@ module Nfa =
     type StateTransitions = Map<char option, Set<State>>
     type Nfa = array<StateTransitions>
 
-    let private getFinalState : Nfa -> State = Array.length // >> ((-) 1)
+    let getReachableStates state symbol (nfa : Nfa) =
+        nfa.[state] |> Map.tryFind symbol |> Option.defaultValue Set.empty
+
+    let rec getClosure state (nfa : Nfa) =
+        nfa
+        |> getReachableStates state None
+        |> Seq.map (fun state -> nfa |> getClosure state)
+        |> Set.unionMany
+        |> Set.add state
+
+    // Internally, we're not adding a StateTransitions for the final state, so the
+    // final state is the length of the NFA; however, when we've completed building
+    // up the NFA, we append an empty StateTransition to the end of the NFA to simplify
+    // getReachableStates to assume we can index the NFA with any valid state, thus the
+    // final state is actually the length of the NFA - 1.
+    let private getFinalStateInternal : Nfa -> State = Array.length
+    let getFinalState = getFinalStateInternal >> (fun state -> state - 1)
 
     let private getSingleStateTransition char states =
         (char, states |> Set.ofSeq) |> Seq.singleton |> Map.ofSeq
@@ -30,7 +46,7 @@ module Nfa =
         let aNfa = a |> buildInternal
         let bNfa = b |> buildInternal
 
-        let aFinalState = aNfa |> getFinalState
+        let aFinalState = aNfa |> getFinalStateInternal
         let bAdjustedNfa = bNfa |> addOffsetToNfa aFinalState
 
         bAdjustedNfa |> Array.append aNfa
@@ -39,8 +55,8 @@ module Nfa =
         let aNfa = a |> buildInternal
         let bNfa = b |> buildInternal
 
-        let aFinalState = aNfa |> getFinalState
-        let bFinalState = bNfa |> getFinalState
+        let aFinalState = aNfa |> getFinalStateInternal
+        let bFinalState = bNfa |> getFinalStateInternal
 
         let aAdjustedNfa = aNfa |> addOffsetToNfa 1
         let bAdjustedNfa = bNfa |> addOffsetToNfa (aFinalState + 2)

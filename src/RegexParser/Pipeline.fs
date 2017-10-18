@@ -14,5 +14,11 @@ module Pipeline =
     let buildAst =
         tokenize >> (Ast.build |> Result.bind)
 
-    let execute : seq<char> -> Result<Regex option, string> =
-        buildAst
+    let buildNfa =
+        buildAst >> (Nfa.build |> Option.map |> Result.map)
+
+    let buildDfa =
+        buildNfa >> (Dfa.build |> Option.map |> Result.map)
+
+    let execute : seq<char> -> Result<Dfa.Dfa<int> option, string> =
+        buildDfa
