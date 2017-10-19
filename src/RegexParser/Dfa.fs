@@ -7,6 +7,7 @@ module Dfa =
     type private State = Set<Nfa.State>
     type StateTransitions<'state when 'state : comparison> = ('state * char * 'state) seq
     type Dfa<'state when 'state : comparison> = {
+        initialState : 'state
         transitions : StateTransitions<'state>
         finalStates : 'state seq
     }
@@ -16,6 +17,11 @@ module Dfa =
         |> Seq.collect (Seq.choose (fun transition -> transition.Key))
         |> Seq.distinct
         |> Seq.toList
+
+    let getTransitionState (initialState : int) symbol dfa =
+        dfa.transitions
+        |> Seq.find (fun (tState, tSymbol, _) -> (tState = initialState) && (tSymbol = symbol))
+        |> (fun (_, _, state) -> state)
 
     // Get the DFA state transition from `state` along `symbol`. This corresponds to the `move`
     // function in the implemented paper.
@@ -74,10 +80,12 @@ module Dfa =
             dfa.finalStates
             |> Seq.map (fun state -> stateMap |> Map.find state)
             |> Seq.toList
+        let reducedInitialState = stateMap |> Map.find dfa.initialState
 
         {
-            transitions = reducedTransitions
-            finalStates = reducedFinalStates
+            initialState = reducedInitialState
+            transitions  = reducedTransitions
+            finalStates  = reducedFinalStates
         }
 
     let build (nfa : Nfa.Nfa) : Dfa<int> =
@@ -86,6 +94,15 @@ module Dfa =
 
         let transitions = nfa |> buildInternal alphabet [ initialState ] Set.empty Seq.empty
         let finalStates = transitions |> getFinalStates nfa
-        let dfa = { transitions = transitions; finalStates = finalStates }
+        let dfa =
+            {
+                initialState = initialState
+                transitions = transitions
+                finalStates = finalStates
+            }
 
         dfa |> reduceDfa
+
+    let isMatch dfa input =
+        let state = input |> Seq.fold (fun state symbol -> getTransitionState state symbol dfa) dfa.initialState
+        dfa.finalStates |> Seq.contains state

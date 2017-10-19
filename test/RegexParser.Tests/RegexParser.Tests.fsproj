@@ -10,6 +10,7 @@
   <ItemGroup>
     <Compile Include="Tokenizer.Tests.fs" />
     <Compile Include="Ast.Tests.fs" />
+    <Compile Include="Dfa.Tests.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
